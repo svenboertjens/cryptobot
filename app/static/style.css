@@ -1,0 +1,161 @@
+body {
+  width: 100%;
+  height: 100%;
+  padding: 7rem 4rem;
+  overflow-x: hidden;
+}
+
+h1, h2, h3 {
+  font-family: "Red Hat Display", sans-serif;
+}
+
+p, button {
+  font-family: "Quicksand", sans-serif;
+  font-weight: bold;
+}
+
+.p-faded {
+  font-weight: normal !important;
+}
+
+.blue-button {
+  background-color: #0051ff;
+  color: #ffffff;
+  border: none;
+  border-radius: 6px;
+  height: 18%;
+  font-size: 0.8em;
+  font-weight: bold;
+  padding: 10px;
+  cursor: pointer;
+  margin-bottom: 20px;
+  transition: 0.1s;
+}
+
+.blue-button:hover {
+  background-color: #003097;
+}
+
+
+.topbar {
+  border-bottom: 1px solid #000000;
+  width: 100%;
+  position: absolute;
+  height: 6vh;
+  left: 0;
+  top: 0;
+  padding: 0.6em 2em 0.5em 2em;
+  display: flex;
+  vertical-align: middle;
+  justify-content: space-between;
+  z-index: 9998;
+  background-color: #ffffff;
+}
+
+.topbar .right {
+  display: flex;
+  align-items: center;
+}
+
+.topbar h1 {
+  margin: 0;
+  font-weight: bold;
+  font-size: 3.6vh;
+  text-align: center;
+}
+
+.topbar img {
+  height: 6vh;
+  margin-right: 40px;
+}
+
+.topbar .left {
+  padding-top: 0.4vh;
+}
+
+.password-overlay {
+  z-index: 9997;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  backdrop-filter: blur(2px);
+}
+
+#password_container {
+  position: fixed;
+  left: 50%;
+  top: 50%;
+  transform: translateX(-50%) translateY(-50%);
+  width: 22vw;
+  background-color: #ffffff;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+  border-radius: 10px;
+  padding: 0 20px;
+  overflow: hidden;
+  transition: opacity 0.5s ease-out;
+  opacity: 0;
+}
+
+#password_container.show {
+  opacity: 1;
+}
+
+.password-overlay > div > div {
+  margin: 0;
+  padding: 0;
+}
+
+.password-overlay .p-header {
+  margin-bottom: 4vh;
+  width: 85%;
+  left: 50%;
+  transform: translateX(-50%);
+  position: relative;
+  text-align: center;
+  height: 10%;
+  font-size: 2vh;
+}
+
+.password-overlay .p-faded {
+  font-size: 0.75vw;
+  margin: 0 0 1.2vh 2px;
+}
+
+.password-overlay input {
+  height: 18%;
+  width: calc(100% - 4px);
+  border: 2px solid #4d4d4d;
+  border-radius: 6px;
+  box-sizing: border-box;
+  padding: 6px 10px;
+  font-size: 0.8vw;
+  letter-spacing: 1px;
+  margin-bottom: 2.5vh;
+}
+
+.password-overlay .bottom {
+  display: flex;
+  margin: 0;
+  padding: 0;
+  width: 100%;
+}
+
+.password-overlay button {
+  width: calc(50% - 4px);
+}
+
+#password_message {
+  width: calc(50% - 4px);
+  padding: 9px 6px 6px 6px;
+  box-sizing: border-box;
+  text-align: center;
+  vertical-align: middle;
+  margin-bottom: 20px;
+}
+
+body > button {
+  width: 280px;
+}
+

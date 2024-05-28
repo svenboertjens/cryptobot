@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bitvavo Bot</title>
+    <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='images/favicon.png') }}">
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js" integrity="sha512-v2CJ7UaYy4JwqLDIrZUI/4hqeoQieOmAZNXBeQyjo21dadnwR+8ZaIJVT8EE2iyI61OV8e6M8PP2/4hpQINQ/g==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jsencrypt/3.3.2/jsencrypt.min.js" integrity="sha512-94ncgEEqkuZ4yNTFmu2dSn1TJ6Ij+ANQqpR7eLVU99kzvYzu6UjBxuVoNHtnd29R+T6nvK+ugCVI698pbyEkvQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@300..700&display=swap" rel="stylesheet">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Red+Hat+Display:ital,wght@0,300..900;1,300..900&display=swap" rel="stylesheet">
+</head>
+
+<body>
+    <div class="topbar">
+        <div class="left">
+            <h1>Cryptrader</h1>
+        </div>
+        <div class="right">
+            <a href="https://bitvavo.com">
+                <img src="{{ url_for('static', filename='images/bitvavo-logo.svg') }}" alt="logo">
+            </a>
+        </div>
+    </div>
+
+    <div class="password-overlay" id="password_overlay">
+        <div id="password_container">
+            <p class="p-header" id="password_header">Welcome to crypto bot!</p>
+            <div class="api-data" id="api_data">
+                <p class="p-faded">Username</p>
+                <input type="text" id="username_input" name="username input" placeholder="name">
+                <p class="p-faded">API key</p>
+                <input type="text" id="api_key_input" name="key input" placeholder="key">
+                <p class="p-faded">API secret</p>
+                <input type="password" id="api_secret_input" name="password input" placeholder="secret">
+            </div>
+            <p class="p-faded">Password</p>
+            <input type="password" id="password_input" name="password input" placeholder="password">
+            <div class="bottom">
+                <button type="submit" class="blue-button" id="password_button">Submit</button>
+                <p class="p-faded" id="password_message"></p>
+            </div>
+        </div>
+    </div>
+
+    <button onclick="use_token()" class="blue-button">Use token</button>
+
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>
