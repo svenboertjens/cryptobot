@@ -1,6 +1,6 @@
 from flask import Flask, request, render_template, jsonify, make_response
 from cryptography_client import Cryptography
-from bitvavo_client import BitvavoClient
+from bitvavo_client import bitvavo
 from functools import wraps
 import threading
 import logger
@@ -24,9 +24,6 @@ app = Flask(__name__)
 crypto_client = Cryptography()
 public_key_pem = crypto_client.public_key_pem
 
-# Get the bitvavo client data
-bitvavo_client = BitvavoClient()
-
 # Default route for the webpage
 @app.route("/")
 def index():
@@ -39,7 +36,7 @@ with open(password_file, "r") as file:
 # Send API data to bitvavo if exists, else clear potentially existing data
 if has_password:
     # Send bitvavo the API data
-        bitvavo_client.initiate_api(
+        bitvavo.initiate_api(
             crypto_client.pem_decrypt(key_file),
             crypto_client.pem_decrypt(secret_file)
         )
@@ -171,7 +168,7 @@ def first_time_login():
     api_secret = body.get("api_secret")
     
     # Send bitvavo the new API data
-    bitvavo_client.initiate_api(api_key, api_secret)
+    bitvavo.initiate_api(api_key, api_secret)
     
     # Store the username
     with open(username_file, "w") as file:
