@@ -28,7 +28,7 @@ class BitvavoClient:
             logger.log(str(e), "error")
         
     # Function to get market values
-    def get_market(self, market: str | None):
+    def get_prices(self, market: str | None):
         return self.socket_call(lambda: self.socket.tickerPrice({"market": market}))
     
     # Function to get information about markets
@@ -80,8 +80,8 @@ class BitvavoClient:
         return self.socket_call(lambda: self.socket.book(market))
     
     # Function to get the account balance
-    def get_balance(self):
-        return self.socket_call(lambda: self.socket.balance())
+    def get_balance(self, symbol: str | None):
+        return self.socket_call(lambda: self.socket.balance({ "symbol": symbol }))
     
     # Function to subscribe to ticker updates
     def subscribe_ticker(self, market: str, callback):
@@ -95,3 +95,7 @@ class BitvavoClient:
     def get_candles(self, market: str, interval: str = "1h", limit: int = 1440):
         return self.socket_call(lambda: self.socket.candles(market, interval, limit=limit))
     
+
+# The client to import in scripts, to use it shared
+bitvavo = BitvavoClient()
+
