@@ -3,6 +3,28 @@ const encrypt = new JSEncrypt();
 let has_api_data = false;
 let session_id = -1;
 
+// Get the page panels
+const panels = [
+    "home",
+    "settings"
+];
+
+// Function to show a specific page
+const full_page = document.getElementById("full_panel");
+const full_page_width = full_page.offsetWidth;
+function show_panel(page) {
+    const page_index = panels.indexOf(page);
+    const padding = - page_index * full_page_width
+    full_page.style.padding = "0 0 0 " + padding + "px";
+};
+
+function show_home() {
+    show_panel("home");
+}; show_home();
+function show_settings() {
+    show_panel("settings");
+};
+
 // Function to get the public key to the server
 function fetch_public_key() {
     $.post({

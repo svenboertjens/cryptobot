@@ -53,7 +53,25 @@
         </div>
     </div>
 
-    <button onclick="use_token()" class="blue-button">Use token</button>
+    <div class="page-selection">
+        <button class="transparent-button" onclick="show_home()">
+            <img src="{{ url_for('static', filename='images/home-icon.svg') }}" alt="">
+            Home
+        </button>
+        <button class="transparent-button" onclick="show_settings()">
+            <img src="{{ url_for('static', filename='images/settings-icon.svg') }}" alt="">
+            Settings
+        </button>
+    </div>
+
+    <div class="main-panel" id="full_panel">
+        <div id="main-1">
+            <h2>Home</h2>
+        </div>
+        <div id="main-2">
+            <h2>Settings</h2>
+        </div>
+    </div>
 
     <script src="{{ url_for('static', filename='script.js') }}"></script>
 </body>

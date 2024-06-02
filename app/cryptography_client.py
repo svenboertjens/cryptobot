@@ -15,9 +15,9 @@ import os
 
 
 # File paths
-password_path = "/app/keys/password.pem"
-api_key_path = "/app/keys/api_key.pem"
-api_secret_path = "/app/keys/api_secret.pem"
+password_path = "./app/keys/password.pem"
+api_key_path = "./app/keys/api_key.pem"
+api_secret_path = "./app/keys/api_secret.pem"
 
 # Variable that contains the unique ID
 

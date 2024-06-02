@@ -49,13 +49,13 @@ class Settings:
             
             # List of the default values
             default_settings = {
-                "sma_margin": 10,
-                "macd_threshold": 1.5,
+                "sma_percentage": 25,
+                "macd_percentage": 8,
                 "rsi_signal_boost": True,
                 "weight_signal_boost": False,
                 "buy_threshold": 0.7,
                 "sell_threshold": 0.3,
-                "stop_percentage": 0.925,
+                "stop_percentage": 92.5,
                 "risk_management": True,
                 "iteration_delay": 60,
                 "spread": 2,
@@ -223,7 +223,7 @@ class Settings:
     # Function to set the last price of a market
     @handle_errors
     def set_last_price(self, market: str, price: float):
-        price *= self.get_setting("stop_percentage")
+        price *= (self.get_setting("stop_percentage") / 100)
         last_price = self.get_last_price(market)
         # Only update if smaller than current risk price
         if price < last_price or last_price < 0:
