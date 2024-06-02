@@ -7,9 +7,9 @@ import time
 
 class BitvavoTestClient:
     data = {
-        "BTC-EUR": list(pd.read_csv("./app/csv/one.csv")["Close"]),
-        "ETH-EUR": list(pd.read_csv("./app/csv/three.csv")["Close"]),
-        "USD-EUR": list(pd.read_csv("./app/csv/six.csv")["Close"])
+        "BTC-EUR": list(pd.read_csv("./app/csv/three.csv")["Close"]),
+        "ETH-EUR": list(pd.read_csv("./app/csv/eight.csv")["Close"]),
+        "USD-EUR": list(pd.read_csv("./app/csv/nine.csv")["Close"])
     }
     balance = {
         "EUR": 1000,
@@ -51,8 +51,12 @@ class BitvavoTestClient:
     def get_candles(self, market: str):
         return self.data[market]
     
+    iterations = 0
+    
     # Function to go to the next period
     def next_period(self):
+        self.iterations += 1
+        
         for market, candles in self.data.items():
             old_price = candles[0]
             new_price = candles[1]
@@ -64,6 +68,7 @@ class BitvavoTestClient:
             if len(candles) <= 200:
                 print(f"Balance: {sum(self.balance.values()):.2f}")
                 print(f"Time: {(time.time() - self.start_time):.2f}s")
+                print(f"Years: {(self.iterations / 365):.2f}")
                 exit(1)
     
 

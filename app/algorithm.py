@@ -18,19 +18,19 @@ def get_closing(candles):
 
 
 # Calculate MACD
-def calculate_macd(closing):
+def calculate_macd(closing, price):
     # Shrink the list size to only what's necessary
     closing = closing[:26]
     
     # Turn closing prices into pandas dataframe
     prices = pd.Series(closing)
-
+    
     # Short-term EMA
     ema_short = prices.ewm(span=12, adjust=False).mean()
-
+    
     # Long-term EMA
     ema_long = prices.ewm(span=26, adjust=False).mean()
-
+    
     # MACD line
     macd_line = ema_short - ema_long
     # Signal line
@@ -44,7 +44,7 @@ def calculate_macd(closing):
     bullish = bullish[len(bullish)-1] # Get last
     
     # Get threshold
-    threshold = settings.get_setting("macd_threshold")
+    threshold = price * settings.get_setting("macd_percentage") / 100
     
     # Weight algorithm
     if bullish:
@@ -62,7 +62,7 @@ def calculate_macd(closing):
         else:
             return 0.0
         
-def calculate_sma(closing):
+def calculate_sma(closing, price):
     # Shrink the list size to only what's necessary
     closing = closing[:200]
     
@@ -75,7 +75,7 @@ def calculate_sma(closing):
     period_200 = data["close"].rolling(window=200).mean()
     period_200 = period_200[len(period_200)-1]
     
-    margin = settings.get_setting("sma_margin")
+    margin = price * settings.get_setting("sma_percentage") / 100
     
     if period_50 < period_200:
         if period_50 + (2 * margin) < period_200:
@@ -163,9 +163,12 @@ def generate(market):
     # The amount of strategies are used
     total_strats = 3
     
+    # Get the price of the market
+    price = bitvavo.get_prices(market_api)[0][1]
+    
     # Generate strategy weights
-    sma = calculate_sma(closing)
-    macd = calculate_macd(closing)
+    sma = calculate_sma(closing, price)
+    macd = calculate_macd(closing, price)
     rsi = calculate_rsi(closing)
     
     # Normalize the weight to 0-1 range
@@ -184,9 +187,6 @@ def generate(market):
     
     # Remove potential float-type decimal errors
     weight = int(weight * 1000) / 1000
-    
-    # Get the price of the market
-    price = bitvavo.get_prices(market_api)[0][1]
     
     # Buy or sell if respective threshold is reached, or if price triggers risk management
     try:

@@ -13,10 +13,10 @@ import os
 
 
 # File paths
-username_file = "/app/keys/username.txt"
-key_file = "/app/keys/api_key.pem"
-secret_file = "/app/keys/api_secret.pem"
-password_file = "/app/keys/password.pem"
+username_file = "./app/keys/username.txt"
+key_file = "./app/keys/api_key.pem"
+secret_file = "./app/keys/api_secret.pem"
+password_file = "./app/keys/password.pem"
 
 app = Flask(__name__)
 
