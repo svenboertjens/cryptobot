@@ -1,3 +1,4 @@
+from trading_history import History
 from bitvavo_test import bitvavo
 import sqlite3
 import logger
@@ -39,13 +40,21 @@ class Settings:
         # Get active markets
         self.c.execute("SELECT * FROM markets")
         markets = self.c.fetchall()
+        
+        # Get history class
+        self.history = History()
 
         # Check whether it's a first-time login
         if len(markets) == 0:
-            # Set up markets table
-            markets = ["BTC_EUR", "ETH_EUR", "USD_EUR"]
+            # Set up markets table and update history
+            markets = ["BTC", "ETH", "USD"]
             for market in markets:
                 self.add_market(market)
+                self.history.add_market(market)
+                
+            # Manually set up the bot's EUR market
+            self.history.add_market("EUR")
+            self.history.correct("EUR", 1000)
             
             # List of the default values
             default_settings = {
@@ -156,9 +165,14 @@ class Settings:
             # Check whether the market can be bought from
             if share > 0:
                 # Get the total balance available
-                total_balance = bitvavo.get_balance("EUR")
+                total_balance = self.history.get_balance("EUR")
+                # Correct balance anomalies
+                max_balance = bitvavo.get_balance("EUR")["available"]
+                if total_balance > max_balance:
+                    total_balance = max_balance
+                    self.history.correct("EUR", max_balance)
                 
-                if total_balance < 1:
+                if total_balance < 0.0001:
                     return 0
                 
                 max_balance = self.get_setting("max_balance")
@@ -178,7 +192,7 @@ class Settings:
                 # Calculate the shares that the budget is divided into
                 all_shares = (len(all_shares_list) * self.get_setting("spread")) - sum(all_shares_list)
                 # Return the
-                if all_shares > 0:
+                if all_shares > 0.0001:
                     return total_balance / all_shares
                 else:
                     return 0
@@ -190,15 +204,29 @@ class Settings:
             # Check whether the market can be sold
             if share > 0:
                 # Calculate the available balance of the market
-                market_balance = bitvavo.get_balance(self.api_name(market))
-                if market_balance < 1:
+                market_balance = self.history.get_balance(market)
+                # Correct anomalities in the available balance
+                max_balance = bitvavo.get_balance(market)["available"]
+                if market_balance > max_balance:
+                    market_balance = max_balance
+                    self.history.correct(market, max_balance)
+                market_amount = market_balance * market_price
+                if market_balance < 0.0001:
                     return 0
                 # Return the balance of how much can be sold
                 return market_balance / share
             else:
                 return 0
         else:
-            logger.log(f"Incorrect side received: '{side}'", "error")
+            markets = self.get_markets()
+            balances = bitvavo.get_balance()
+            total_balance = 0
+            
+            for balance in balances:
+                if balance["symbol"] in markets:
+                    total_balance += balance["available"] + balance["inOrder"]
+                    
+            return total_balance
             
     # Function to add 1 to buy counter of a market
     @handle_errors
@@ -233,4 +261,3 @@ class Settings:
 
 # Use a variable to define the settings to make it shared
 settings = Settings()
-

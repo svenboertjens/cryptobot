@@ -1,3 +1,4 @@
+from trading_history import History
 from bitvavo_test import bitvavo
 from settings import settings
 import pandas as pd
@@ -6,6 +7,8 @@ import logger
 
 # This script contains the trading algorithm.
 
+
+history = History()
 
 # Function to get closing prices of a market
 def get_closing(candles):
@@ -135,36 +138,37 @@ def calculate_rsi(closing):
     return rsi_curr
 
 
-def buy(market, market_api, price):
+def buy(market, price):
     balance = settings.get_balance(market, "buy")
-    if balance > 0:
-        amount = balance / price
-        response = bitvavo.place_order(market_api, "buy", "market", { "amount": amount - 0.01 })
+    if balance > 0.0001:
+        amount = balance / price - 0.0001
+        response = bitvavo.place_order(market, "buy", "market", { "amount": amount })
         settings.purchased(market)
-        logger.log(f"Bought '{amount}' of market '{market_api}' for '{price}'. API response: {response}")
+        history.add_value(market, price, amount, "buy")
+        logger.log(f"Bought '{amount}' of market '{market}' for '{price}'. API response: {response}")
+        return balance
     
-def sell(market, market_api, price):
+def sell(market, price):
     balance = settings.get_balance(market, "sell")
-    if balance > 0:
-        amount = balance / price
-        response = bitvavo.place_order(market_api, "sell", "market", { "amount": amount - 0.01 })
+    if balance > 0.0001:
+        amount = balance / price - 0.0001
+        response = bitvavo.place_order(market, "sell", "market", { "amount": amount })
         settings.sold(market)
-        logger.log(f"Sold '{amount}' of market '{market_api}' for '{price}'. API response: {response}")
+        history.add_value(market, price, amount, "sell")
+        logger.log(f"Sold '{amount}' of market '{market}' for '{price}'. API response: {response}")
+        return balance
     
     
 def generate(market):
-    # Normalized market name for API communication
-    market_api = market.replace("_", "-")
-    
     # Get the market candles and closing prices
-    candles = bitvavo.get_candles(market_api)
+    candles = bitvavo.get_candles(market)
     closing = candles #get_closing(candles)
     
     # The amount of strategies are used
     total_strats = 3
     
-    # Get the price of the market
-    price = bitvavo.get_prices(market_api)[0][1]
+    # Get the price of the market in euros
+    price = bitvavo.get_prices(market + "-EUR")[0][1]
     
     # Generate strategy weights
     sma = calculate_sma(closing, price)
@@ -192,11 +196,13 @@ def generate(market):
     try:
         risk_signal = settings.get_setting("risk_management") and price < settings.get_last_price(market)
         if weight > settings.get_setting("buy_threshold"):
-            buy(market, market_api, price)
+            balance = buy(market, price)
             settings.set_last_price(market, price)
+            return balance
         elif weight < settings.get_setting("sell_threshold") or risk_signal:
-            sell(market, market_api, price)
+            balance = sell(market, price)
             settings.set_last_price(market, price)
+            return balance
     except Exception as e:
         logger.log(f"An error occurred at buying/selling at a market. Error message: {str(e)}", "error")
             

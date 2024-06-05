@@ -14,8 +14,7 @@ const full_page = document.getElementById("full_panel");
 const full_page_width = full_page.offsetWidth;
 function show_panel(page) {
     const page_index = panels.indexOf(page);
-    const padding = - page_index * full_page_width
-    full_page.style.padding = "0 0 0 " + padding + "px";
+    full_page.style.transform = `translateX(-${page_index * full_page_width}px)`;
 };
 
 function show_home() {
@@ -53,6 +52,34 @@ fetch_public_key();
 setTimeout(function() {
    document.getElementById("password_container").classList.toggle("show");
 }, 500);
+
+// Get home page elements
+const profit_element = document.getElementById("profit_element");
+const balance_element = document.getElementById("balance_element");
+
+// Function to get the homepage data
+function get_homepage() {
+    $.post({
+        url: "/homepage-data",
+        type: "POST",
+        contentType: "application/json",
+        data: JSON.stringify({ session_id: session_id }),
+        success: function(data) {
+            //const markets = data.markets;
+            const balance = data.balance;
+            const profit = data.profit;
+            
+            if (profit >= 0) {
+                profit_element.innerHTML = `Profit: ${profit}%`;
+            } else {
+                profit_element.innerHTML = `Loss: ${profit}%`;
+            }
+
+            balance_element.innerHTML = `Balance: €${balance}`;
+        },
+        error: post_error
+    });
+};
 
 // Get password elements
 const password_input = document.getElementById("password_input");
@@ -97,6 +124,8 @@ function first_time_login() {
             document.getElementById("password_overlay").style.display = "None";
             // Hide API data prompt
             document.getElementById("api_data").style.display = "None";
+            // Get the homepage data
+            get_homepage();
         },
         error: function(xhr) {
             // Display the error message
@@ -137,6 +166,8 @@ function verify_password() {
             session_id = data.session_id
             // Hide the password prompt
             document.getElementById("password_overlay").style.display = "None";
+            // Get the homepage data
+            get_homepage();
         },
         error: function(xhr) {
             // Display the error message
@@ -158,22 +189,25 @@ document.getElementById("password_button").addEventListener("click", () => {
     };
 });
 
+function post_error(xhr) {
+    const error_message = JSON.parse(xhr.responseText).message;
+    console.log(error_message);
+    if (error_message == "Expired token") {
+        // Set password screen title correctly
+        document.getElementById("password_header").innerHTML = "Sorry, the session expired!"
+        // Show password screen
+        document.getElementById("password_overlay").style.display = "block";
+    };
+}
+
 // Function to call when use token button is clicked
 function use_token() {
     $.post({
-        url: "/use-token",
+        url: "/verify-token",
         type: "POST",
         contentType: "application/json",
         data: JSON.stringify({ session_id: session_id }),
-        error: function(xhr, status, message) {
-            const error_message = JSON.parse(xhr.responseText).message;
-            if (error_message == "Expired token") {
-                // Set password screen title correctly
-                document.getElementById("password_header").innerHTML = "Sorry, the session expired!"
-                // Show password screen
-                document.getElementById("password_overlay").style.display = "block";
-            };
-        }
+        error: post_error
     });
 };
 

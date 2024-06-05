@@ -1,12 +1,20 @@
 from flask import Flask, request, render_template, jsonify, make_response
 from cryptography_client import Cryptography
-from bitvavo_client import bitvavo
+from trading_history import History
+from bitvavo_test import bitvavo
+from file_queue import queue
 from functools import wraps
 import threading
 import logger
 import time
 import jwt
 import os
+
+
+# FOR DEVELOPMENT, REMOVE IN PRODUCTION
+if os.path.exists("data.db"):
+    os.remove("data.db")
+# END OF DEVELOPMENT CODE
 
 
 # This script hosts the webpage for controlling the bot.
@@ -77,9 +85,43 @@ def remove_expired_sessions():
             del sessions[id]
         
         time.sleep(60)
+        
+# Dict to keep track of balances
+balances = {}
+
+# Function to repeatedly run the algorithm
+def run_algorithm():
+    # Import some thread unfriendly items locally
+    from algorithm import generate
+    from settings import settings
+    
+    bitvavo.next_period() # Test function, remove in production
+    
+    while True:
+        # Get all markets
+        markets = settings.get_markets()
+        # Generate for every market
+        try:
+            for market in markets:
+                balance = generate(market)
+                balances[market] = balance
+        except Exception as e:
+            logger.log(f"A critical error occurred at running the algorithm. Error message: {str(e)}", "critical")
+            exit(1)
+            
+        # Add to the trading history
+        ...
+        
+        bitvavo.next_period() # Test function, remove in production
+        
+        # Wait for the delay time
+        #time.sleep(settings.get_setting("iteration_delay"))
 
 # Thread the expired session remover to run it in background
 threading.Thread(target=remove_expired_sessions, daemon=True).start()
+# Also thread the algorithm handler
+thread = threading.Thread(target=run_algorithm)
+thread.start()
 
 # Function to verify session tokens
 def verify_token(f):
@@ -188,12 +230,27 @@ def first_time_login():
     
     return response, 200
 
-# Test function to use the token
-@app.route("/use-token", methods=["POST"])
+history = History()
+
+def sum_balances(data):
+    total_balance = 0
+    for market_data in data.values():
+        total_balance += market_data[-1]["balance"]
+            
+    return total_balance
+
+# Route to fetch home page data
+@app.route("/homepage-data", methods=["POST"])
 @verify_token
-def use_token():
-    return jsonify({"message": "Received token!"}), 200
+def homepage_data():
+    data = history.get_values()
+    eur_balance = bitvavo.get_balance("EUR")
+    balances["EUR"] = eur_balance["available"]
+    profit = 10#calculate_profit(balance)
+    profit = f"{profit:.2f}"
+    
+    return jsonify({ "data": data, "balances": balances, "profit": profit }), 200
 
 if __name__ == "__main__":
-    app.run(debug=True, port=8000)
+    app.run(debug=True, port=8000, use_reloader=False)
 

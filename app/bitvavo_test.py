@@ -7,14 +7,20 @@ import time
 
 class BitvavoTestClient:
     data = {
-        "BTC-EUR": list(pd.read_csv("./app/csv/three.csv")["Close"]),
-        "ETH-EUR": list(pd.read_csv("./app/csv/eight.csv")["Close"]),
-        "USD-EUR": list(pd.read_csv("./app/csv/nine.csv")["Close"])
+        "BTC": list(pd.read_csv("./app/csv/one.csv")["Close"]),
+        "ETH": list(pd.read_csv("./app/csv/seven.csv")["Close"]),
+        "USD": list(pd.read_csv("./app/csv/four.csv")["Close"]),
+        "BTC-EUR": [0],
+        "ETH-EUR": [0],
+        "USD-EUR": [0]
     }
     balance = {
-        "EUR": 1000,
+        "EUR": { "available": 1000, "inOrder": 0 },
+        "BTC": { "available": 0, "inOrder": 0 },
         "BTC-EUR": 0,
+        "ETH": { "available": 0, "inOrder": 0 },
         "ETH-EUR": 0,
+        "USD": { "available": 0, "inOrder": 0 },
         "USD-EUR": 0
     }
     start_time = time.time()
@@ -29,12 +35,12 @@ class BitvavoTestClient:
             price = self.data[market][0]
             amount = body["amount"]
             total_price = price * amount
-            if side == "buy" and self.balance["EUR"] >= total_price:
-                self.balance["EUR"] -= total_price  * 1.002
-                self.balance[market] += total_price / 1.002
-            elif side == "sell" and self.balance[market] >= total_price:
-                self.balance["EUR"] += total_price  / 1.002
-                self.balance[market] -= total_price * 1.002
+            if side == "buy" and self.balance["EUR"]["available"] >= total_price:
+                self.balance["EUR"]["available"] -= total_price  * 1.002
+                self.balance[market]["available"] += total_price / 1.002
+            elif side == "sell" and self.balance[market]["available"] >= total_price:
+                self.balance["EUR"]["available"] += total_price  / 1.002
+                self.balance[market]["available"] -= total_price * 1.002
             else:
                 if side == "buy":
                     print(f"Buy error:  got '{total_price}', limit was '{self.balance["EUR"]}'")
@@ -44,8 +50,11 @@ class BitvavoTestClient:
                 return "error"
     
     # Function to get the account balance
-    def get_balance(self, symbol: str | None):
-        return self.balance[symbol]
+    def get_balance(self, symbol: str = None):
+        if symbol:
+            return self.balance[symbol]
+        else:
+            return self.balance
         
     # Function to get the candles of a market
     def get_candles(self, market: str):
@@ -58,18 +67,28 @@ class BitvavoTestClient:
         self.iterations += 1
         
         for market, candles in self.data.items():
-            old_price = candles[0]
-            new_price = candles[1]
+            if "-EUR" in market:
+                continue
             
-            self.balance[market] = self.balance[market] / old_price * new_price
+            old_price = candles.pop(0)
+            new_price = candles[0]
             
-            candles.pop(0)
+            self.balance[market]["available"] = self.balance[market]["available"] / old_price * new_price
+            self.data[market + "-EUR"][0] = new_price
             
             if len(candles) <= 200:
-                print(f"Balance: {sum(self.balance.values()):.2f}")
+                total_balance = 0
+                for market, balance in self.balance.items():
+                    if "-EUR" not in market:
+                        total_balance += balance["available"]
+                    
+                print(f"Balance: {total_balance:.2f}")
                 print(f"Time: {(time.time() - self.start_time):.2f}s")
                 print(f"Years: {(self.iterations / 365):.2f}")
                 exit(1)
+                
+    def initiate_api(self, *args, **kwargs):
+        return args, kwargs
     
 
 # The client to import in scripts, to use it shared
